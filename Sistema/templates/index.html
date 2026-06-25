@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detector de ofertas fraudulentas</title>
+    <link rel="stylesheet" href="/static/styles.css?v=2">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<header class="hero">
+    <div class="hero-content">
+        <div class="icon-box">🛡️</div>
+        <div>
+            <h1>Detector de ofertas laborales potencialmente fraudulentas</h1>
+            <p>Analizamos y clasificamos ofertas de Dynamite Jobs y Hiring Cafe.</p>
+            <span>Web scraping + regex + procesamiento de texto + scoring de riesgo</span>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+
+    <section class="resumen">
+        <div class="card azul">
+            <h3>Total de ofertas</h3>
+            <strong id="total">0</strong>
+            <p>Analizadas</p>
+        </div>
+
+        <div class="card rojo">
+            <h3>Riesgo alto</h3>
+            <strong id="alto">0</strong>
+            <p>Requiere atención</p>
+        </div>
+
+        <div class="card naranja">
+            <h3>Riesgo medio</h3>
+            <strong id="medio">0</strong>
+            <p>Posible riesgo</p>
+        </div>
+
+        <div class="card verde">
+            <h3>Riesgo bajo</h3>
+            <strong id="bajo">0</strong>
+            <p>Mayormente seguras</p>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div>
+            <label>Fuente</label>
+            <select id="filtroFuente" onchange="mostrarEmpleos()">
+                <option value="Todas">Todas</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Categoría</label>
+            <select id="filtroCategoria" onchange="mostrarEmpleos()">
+                <option value="Todas">Todas</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Nivel de riesgo</label>
+            <select id="filtroRiesgo" onchange="mostrarEmpleos()">
+                <option value="Todos">Todos</option>
+                <option value="Alto">Alto</option>
+                <option value="Medio">Medio</option>
+                <option value="Bajo">Bajo</option>
+            </select>
+        </div>
+    </section>
+
+    <section class="grafico">
+        <h2>Distribución del riesgo laboral</h2>
+        <canvas id="graficoRiesgo"></canvas>
+    </section>
+
+    <div id="mensaje">Cargando datos...</div>
+
+    <section id="contenedor"></section>
+
+</main>
+
+<script src="/static/script.js?v=2"></script>
+</body>
+</html>
