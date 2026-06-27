@@ -42,6 +42,8 @@ function mostrarEmpleos() {
     const categoria = document.getElementById("filtroCategoria").value;
     const fuente = document.getElementById("filtroFuente").value;
     const riesgo = document.getElementById("filtroRiesgo").value;
+    const orden = document.getElementById("filtroOrden").value;
+    const busqueda = document.getElementById("filtroBusqueda").value.toLowerCase().trim();
 
     let filtrados = empleos;
 
@@ -57,9 +59,35 @@ function mostrarEmpleos() {
         filtrados = filtrados.filter(e => e.nivel_riesgo === riesgo);
     }
 
+    if (busqueda) {
+        filtrados = filtrados.filter(e =>
+            e.titulo.toLowerCase().includes(busqueda) ||
+            e.empresa.toLowerCase().includes(busqueda)
+        );
+    }
+
+    if (orden === "riesgo_desc") {
+        filtrados = [...filtrados].sort((a, b) => b.riesgo - a.riesgo);
+    } else if (orden === "riesgo_asc") {
+        filtrados = [...filtrados].sort((a, b) => a.riesgo - b.riesgo);
+    } else if (orden === "titulo_asc") {
+        filtrados = [...filtrados].sort((a, b) => a.titulo.localeCompare(b.titulo));
+    } else if (orden === "titulo_desc") {
+        filtrados = [...filtrados].sort((a, b) => b.titulo.localeCompare(a.titulo));
+    }
+
     actualizarMetricas(filtrados);
     actualizarGrafico(filtrados);
     renderizarOfertas(filtrados);
+}
+
+function resetFiltros() {
+    document.getElementById("filtroBusqueda").value = "";
+    document.getElementById("filtroFuente").value = "Todas";
+    document.getElementById("filtroCategoria").value = "Todas";
+    document.getElementById("filtroRiesgo").value = "Todos";
+    document.getElementById("filtroOrden").value = "default";
+    mostrarEmpleos();
 }
 
 function actualizarMetricas(datos) {

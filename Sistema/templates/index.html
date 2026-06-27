@@ -48,6 +48,11 @@
     </section>
 
     <section class="panel">
+        <div class="filtro-busqueda">
+            <label>🔍 Buscar</label>
+            <input type="text" id="filtroBusqueda" placeholder="Buscar por título o empresa..." oninput="mostrarEmpleos()">
+        </div>
+
         <div>
             <label>Fuente</label>
             <select id="filtroFuente" onchange="mostrarEmpleos()">
@@ -66,10 +71,25 @@
             <label>Nivel de riesgo</label>
             <select id="filtroRiesgo" onchange="mostrarEmpleos()">
                 <option value="Todos">Todos</option>
-                <option value="Alto">Alto</option>
-                <option value="Medio">Medio</option>
-                <option value="Bajo">Bajo</option>
+                <option value="Alto">🔴 Alto</option>
+                <option value="Medio">🟡 Medio</option>
+                <option value="Bajo">🟢 Bajo</option>
             </select>
+        </div>
+
+        <div>
+            <label>Ordenar por</label>
+            <select id="filtroOrden" onchange="mostrarEmpleos()">
+                <option value="default">Por defecto</option>
+                <option value="riesgo_desc">Mayor riesgo primero</option>
+                <option value="riesgo_asc">Menor riesgo primero</option>
+                <option value="titulo_asc">Título A → Z</option>
+                <option value="titulo_desc">Título Z → A</option>
+            </select>
+        </div>
+
+        <div class="filtro-reset">
+            <button onclick="resetFiltros()">↺ Limpiar filtros</button>
         </div>
     </section>
 
