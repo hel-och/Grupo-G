@@ -3,7 +3,7 @@ import unicodedata
 
 
 def limpiar_texto(texto):
-    texto = texto.lower()
+    texto = str(texto).lower()
     texto = unicodedata.normalize("NFD", texto)
     texto = texto.encode("ascii", "ignore").decode("utf-8")
     texto = re.sub(r"\s+", " ", texto)
@@ -17,21 +17,31 @@ def calcular_riesgo(empleo):
     texto_original = (
         empleo.get("titulo", "") + " " +
         empleo.get("empresa", "") + " " +
+        empleo.get("categoria", "") + " " +
+        empleo.get("ubicacion", "") + " " +
         empleo.get("salario", "") + " " +
-        empleo.get("descripcion", "")
+        empleo.get("requisitos", "") + " " +
+        empleo.get("responsabilidades", "") + " " +
+        empleo.get("descripcion", "") + " " +
+        empleo.get("fuente", "") + " " +
+        empleo.get("url", "")
     )
 
     texto = limpiar_texto(texto_original)
 
     reglas = [
-        (r"\b(dinero rapido|gana dinero|ingresos garantizados|ganancias garantizadas|easy money|quick money)\b", 35, "Promesa de dinero fácil o ganancias garantizadas"),
-        (r"\b(sin experiencia|no necesitas experiencia|no experience required)\b", 20, "Oferta demasiado fácil o sin experiencia requerida"),
-        (r"\b(urgente|contratacion inmediata|inicio inmediato|apply now)\b", 15, "Lenguaje de urgencia"),
-        (r"\b(whatsapp|telegram|mensaje directo|dm)\b", 25, "Contacto externo poco formal"),
+        (r"\b(dinero rapido|gana dinero rapido|gana dinero|easy money|quick money|make money fast)\b", 35, "Promesa de dinero fácil o rápido"),
+        (r"\b(ingresos garantizados|ganancias garantizadas|guaranteed income|guaranteed earnings)\b", 35, "Promesa de ingresos o ganancias garantizadas"),
+        (r"\b(sin experiencia|no necesitas experiencia|no experience required|no experience needed)\b", 20, "Oferta demasiado fácil o sin experiencia requerida"),
+        (r"\b(urgente|contratacion inmediata|inicio inmediato|apply now|start immediately|immediate start|hiring urgently)\b", 15, "Lenguaje de urgencia"),
+        (r"\b(whatsapp|telegram|mensaje directo|dm|direct message)\b", 25, "Contacto externo poco formal"),
         (r"\b(gmail|hotmail|yahoo|outlook)\.com\b", 25, "Correo no corporativo"),
-        (r"\b(pago para postular|pagar capacitacion|deposito previo|inversion inicial|upfront payment)\b", 45, "Solicitud de pago o inversión previa"),
-        (r"\b(forex|trading|investment opportunity|oportunidad de inversion|bitcoin investment)\b", 30, "Referencia financiera riesgosa"),
-        (r"\b(sin entrevista|aprobacion inmediata|no interview)\b", 25, "Proceso de selección poco confiable"),
+        (r"\b(pago para postular|pagar capacitacion|deposito previo|inversion inicial|upfront payment|training fee|application fee)\b", 45, "Solicitud de pago o inversión previa"),
+        (r"\b(forex|trading|crypto|bitcoin|investment opportunity|oportunidad de inversion|bitcoin investment)\b", 30, "Referencia financiera riesgosa"),
+        (r"\b(sin entrevista|aprobacion inmediata|no interview|instant approval)\b", 25, "Proceso de selección poco confiable"),
+        (r"\b(alta comision|comisiones altas|commission only|solo comision|commission-based)\b", 20, "Compensación basada solo en comisiones"),
+        (r"\b(bonos ilimitados|unlimited bonuses|unlimited income|income potential|uncapped earnings)\b", 20, "Promesa de ingresos exagerados"),
+        (r"\b(trabaja desde casa y gana|work from home and earn)\b", 20, "Mensaje promocional típico de oferta sospechosa"),
     ]
 
     for patron, puntos, razon in reglas:
@@ -39,13 +49,30 @@ def calcular_riesgo(empleo):
             riesgo += puntos
             razones.append(razon)
 
-    if empleo.get("empresa") in ["", "No encontrada", None]:
+    empresa = empleo.get("empresa", "")
+    requisitos = limpiar_texto(empleo.get("requisitos", ""))
+    responsabilidades = limpiar_texto(empleo.get("responsabilidades", ""))
+    salario = limpiar_texto(empleo.get("salario", ""))
+
+    if empresa in ["", "No encontrada", None]:
         riesgo += 20
         razones.append("Empresa no identificada")
 
-    if len(empleo.get("descripcion", "")) < 150:
+    if salario in ["", "no especificado", "no encontrado"]:
+        riesgo += 10
+        razones.append("Salario no especificado")
+
+    if len(requisitos) < 80:
+        riesgo += 10
+        razones.append("Requisitos poco detallados")
+
+    if len(responsabilidades) < 80:
+        riesgo += 10
+        razones.append("Responsabilidades poco detalladas")
+
+    if len(requisitos + responsabilidades) < 150:
         riesgo += 15
-        razones.append("Descripción muy corta")
+        razones.append("Información del puesto demasiado corta")
 
     if riesgo >= 50:
         nivel = "Alto"
@@ -58,3 +85,4 @@ def calcular_riesgo(empleo):
         razones.append("Sin señales sospechosas relevantes")
 
     return riesgo, nivel, "; ".join(razones)
+
