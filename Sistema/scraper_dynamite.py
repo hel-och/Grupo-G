@@ -17,7 +17,7 @@ def traducir(texto):
     try:
         if not texto or texto == "No especificado":
             return texto
-        return GoogleTranslator(source="auto", target="es").translate(texto[:1800])
+        return GoogleTranslator(source="auto", target="es").translate(str(texto)[:1800])
     except:
         return texto
 
@@ -28,55 +28,86 @@ def es_salario_valido(linea):
     patrones_salario = [
         r"\$\s?\d{2,3}k\s?[-–]\s?\$?\s?\d{2,3}k",
         r"\$\s?\d{2,3},?\d{3}\s?[-–]\s?\$?\s?\d{2,3},?\d{3}",
-        r"usd\s?\d{2,3}k\s?[-–]\s?usd?\s?\d{2,3}k",
         r"\$\s?\d+(\.\d+)?\s?(\/|per)\s?(hour|month|year|yr)",
-        r"\$\s?\d{2,3}k\s?(\/|per)\s?(year|yr)",
         r"\d{2,3}k\s?[-–]\s?\d{2,3}k\s?(\/|per)?\s?(year|yr)?",
     ]
 
-    palabras_salario = [
-        "per year",
-        "per month",
-        "per hour",
-        "/year",
-        "/month",
-        "/hour",
-        "annually",
-        "annual",
-        "salary",
-        "compensation"
-    ]
+    descartes = ["million", "funding", "customers", "revenue", "investment", "raised"]
 
-    palabras_descartar = [
-        "million",
-        "millions",
-        "billion",
-        "funding",
-        "raised",
-        "backed by",
-        "customers",
-        "databases",
-        "revenue",
-        "investment"
-    ]
-
-    if any(p in texto for p in palabras_descartar):
+    if any(p in texto for p in descartes):
         return False
 
-    tiene_patron = any(re.search(patron, texto) for patron in patrones_salario)
-    tiene_contexto = any(palabra in texto for palabra in palabras_salario)
-
-    return tiene_patron or ("$" in texto and tiene_contexto)
+    return any(re.search(patron, texto) for patron in patrones_salario)
 
 
 def extraer_salario(lineas):
     for linea in lineas:
-        linea_limpia = linea.strip()
-
-        if es_salario_valido(linea_limpia):
-            return linea_limpia
-
+        if es_salario_valido(linea):
+            return linea.strip()
     return "No especificado"
+
+
+def limpiar_titulo(titulo):
+    invalidos = [
+        "Dynamite Jobs", "Remote Jobs", "Find a Remote Job",
+        "Load More", "Post a job here!", "Login", "Sign Up"
+    ]
+
+    if not titulo or titulo.strip() in invalidos:
+        return "No encontrado"
+
+    return titulo.strip()
+
+
+def limpiar_bloque(texto):
+    texto = re.sub(r"\s+", " ", texto)
+    return texto.strip()
+
+
+def extraer_requisitos_y_responsabilidades(lineas):
+    texto = "\n".join(lineas)
+
+    patrones_requisitos = [
+        r"(Requirements|Qualifications|What you bring|What you'll bring|You have|Required skills)(.*?)(Responsibilities|What you'll do|About the role|Benefits|Apply|$)",
+    ]
+
+    patrones_responsabilidades = [
+        r"(Responsibilities|What you'll do|About the role|The role|Your role)(.*?)(Requirements|Qualifications|Benefits|Apply|$)",
+    ]
+
+    requisitos = ""
+    responsabilidades = ""
+
+    for patron in patrones_requisitos:
+        m = re.search(patron, texto, re.IGNORECASE | re.DOTALL)
+        if m:
+            requisitos = limpiar_bloque(m.group(2))
+            break
+
+    for patron in patrones_responsabilidades:
+        m = re.search(patron, texto, re.IGNORECASE | re.DOTALL)
+        if m:
+            responsabilidades = limpiar_bloque(m.group(2))
+            break
+
+    if not requisitos:
+        posibles = []
+        claves = ["experience", "years", "skills", "knowledge", "familiar", "proficiency", "degree"]
+        for linea in lineas:
+            if any(c in linea.lower() for c in claves):
+                posibles.append(linea)
+        requisitos = " ".join(posibles[:8])
+
+    if not responsabilidades:
+        responsabilidades = " ".join(lineas[:25])
+
+    if len(requisitos) < 40:
+        requisitos = "Requisitos no especificados claramente en la oferta."
+
+    if len(responsabilidades) < 40:
+        responsabilidades = "Responsabilidades no especificadas claramente en la oferta."
+
+    return traducir(requisitos), traducir(responsabilidades)
 
 
 def obtener_links(driver, url_base, cantidad_links=120):
@@ -101,11 +132,14 @@ def obtener_links(driver, url_base, cantidad_links=120):
                 continue
 
             if "/company/" in href and "/remote-job/" in href and href not in vistos:
-                vistos.add(href)
-                links.append({
-                    "url": href,
-                    "titulo_original": texto
-                })
+                titulo = limpiar_titulo(texto)
+
+                if titulo != "No encontrado":
+                    vistos.add(href)
+                    links.append({
+                        "url": href,
+                        "titulo_original": titulo
+                    })
 
             if len(links) >= cantidad_links:
                 break
@@ -113,30 +147,6 @@ def obtener_links(driver, url_base, cantidad_links=120):
         pagina += 1
 
     return links
-
-
-def limpiar_titulo(titulo):
-    if not titulo:
-        return "No encontrado"
-
-    invalidos = [
-        "Dynamite Jobs",
-        "Remote Jobs",
-        "Find a Remote Job",
-        "Load More",
-        "Post a job here!",
-        "For Employers",
-        "Login",
-        "Sign Up",
-        "Subscribe to Job Alerts",
-        "Trabajos de dinamita",
-        "¡Publica un trabajo aquí!"
-    ]
-
-    if titulo.strip() in invalidos:
-        return "No encontrado"
-
-    return titulo.strip()
 
 
 def extraer_detalle(driver, oferta, categoria):
@@ -163,7 +173,7 @@ def extraer_detalle(driver, oferta, categoria):
     if "company" in partes:
         empresa = partes[partes.index("company") + 1].replace("-", " ").title()
 
-    descripcion = " ".join(lineas[:70])
+    requisitos, responsabilidades = extraer_requisitos_y_responsabilidades(lineas)
 
     return {
         "titulo": traducir(titulo_original),
@@ -171,7 +181,9 @@ def extraer_detalle(driver, oferta, categoria):
         "categoria": categoria,
         "ubicacion": "Remoto",
         "salario": salario,
-        "descripcion": traducir(descripcion),
+        "requisitos": requisitos,
+        "responsabilidades": responsabilidades,
+        "descripcion": requisitos + " " + responsabilidades,
         "url": link,
         "fuente": "Dynamite Jobs"
     }
