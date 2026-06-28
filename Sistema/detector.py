@@ -19,7 +19,6 @@ def calcular_riesgo(empleo):
         empleo.get("empresa", "") + " " +
         empleo.get("categoria", "") + " " +
         empleo.get("ubicacion", "") + " " +
-        empleo.get("salario", "") + " " +
         empleo.get("requisitos", "") + " " +
         empleo.get("responsabilidades", "") + " " +
         empleo.get("descripcion", "") + " " +
@@ -30,18 +29,66 @@ def calcular_riesgo(empleo):
     texto = limpiar_texto(texto_original)
 
     reglas = [
-        (r"\b(dinero rapido|gana dinero rapido|gana dinero|easy money|quick money|make money fast)\b", 35, "Promesa de dinero fácil o rápido"),
-        (r"\b(ingresos garantizados|ganancias garantizadas|guaranteed income|guaranteed earnings)\b", 35, "Promesa de ingresos o ganancias garantizadas"),
-        (r"\b(sin experiencia|no necesitas experiencia|no experience required|no experience needed)\b", 20, "Oferta demasiado fácil o sin experiencia requerida"),
-        (r"\b(urgente|contratacion inmediata|inicio inmediato|apply now|start immediately|immediate start|hiring urgently)\b", 15, "Lenguaje de urgencia"),
-        (r"\b(whatsapp|telegram|mensaje directo|dm|direct message)\b", 25, "Contacto externo poco formal"),
-        (r"\b(gmail|hotmail|yahoo|outlook)\.com\b", 25, "Correo no corporativo"),
-        (r"\b(pago para postular|pagar capacitacion|deposito previo|inversion inicial|upfront payment|training fee|application fee)\b", 45, "Solicitud de pago o inversión previa"),
-        (r"\b(forex|trading|crypto|bitcoin|investment opportunity|oportunidad de inversion|bitcoin investment)\b", 30, "Referencia financiera riesgosa"),
-        (r"\b(sin entrevista|aprobacion inmediata|no interview|instant approval)\b", 25, "Proceso de selección poco confiable"),
-        (r"\b(alta comision|comisiones altas|commission only|solo comision|commission-based)\b", 20, "Compensación basada solo en comisiones"),
-        (r"\b(bonos ilimitados|unlimited bonuses|unlimited income|income potential|uncapped earnings)\b", 20, "Promesa de ingresos exagerados"),
-        (r"\b(trabaja desde casa y gana|work from home and earn)\b", 20, "Mensaje promocional típico de oferta sospechosa"),
+        (
+            r"\b(dinero rapido|gana dinero rapido|gana dinero|easy money|quick money|make money fast)\b",
+            35,
+            "Promesa de dinero fácil o rápido"
+        ),
+        (
+            r"\b(ingresos garantizados|ganancias garantizadas|guaranteed income|guaranteed earnings)\b",
+            35,
+            "Promesa de ingresos o ganancias garantizadas"
+        ),
+        (
+            r"\b(sin experiencia|no necesitas experiencia|no experience required|no experience needed)\b",
+            20,
+            "Oferta demasiado fácil o sin experiencia requerida"
+        ),
+        (
+            r"\b(urgente|contratacion inmediata|inicio inmediato|apply now|start immediately|immediate start|hiring urgently)\b",
+            15,
+            "Lenguaje de urgencia"
+        ),
+        (
+            r"\b(whatsapp|telegram|mensaje directo|dm|direct message)\b",
+            25,
+            "Contacto externo poco formal"
+        ),
+        (
+            r"\b(gmail|hotmail|yahoo|outlook)\.com\b",
+            25,
+            "Correo no corporativo"
+        ),
+        (
+            r"\b(pago para postular|pagar capacitacion|deposito previo|inversion inicial|upfront payment|training fee|application fee)\b",
+            45,
+            "Solicitud de pago o inversión previa"
+        ),
+        (
+            r"\b(forex|trading|crypto|bitcoin|investment opportunity|oportunidad de inversion|bitcoin investment)\b",
+            30,
+            "Referencia financiera riesgosa"
+        ),
+        (
+            r"\b(sin entrevista|aprobacion inmediata|no interview|instant approval)\b",
+            25,
+            "Proceso de selección poco confiable"
+        ),
+        (
+            r"\b(alta comision|comisiones altas|commission only|solo comision|commission-based)\b",
+            20,
+            "Compensación basada solo en comisiones"
+        ),
+        (
+            r"\b(bonos ilimitados|unlimited bonuses|unlimited income|income potential|uncapped earnings)\b",
+            20,
+            "Promesa de ingresos exagerados"
+        ),
+        (
+            r"\b(trabaja desde casa y gana|work from home and earn)\b",
+            20,
+            "Mensaje promocional típico de oferta sospechosa"
+        ),
     ]
 
     for patron, puntos, razon in reglas:
@@ -51,16 +98,13 @@ def calcular_riesgo(empleo):
 
     empresa = empleo.get("empresa", "")
     requisitos = limpiar_texto(empleo.get("requisitos", ""))
-    responsabilidades = limpiar_texto(empleo.get("responsabilidades", ""))
-    salario = limpiar_texto(empleo.get("salario", ""))
+    responsabilidades = limpiar_texto(
+        empleo.get("responsabilidades", "")
+    )
 
     if empresa in ["", "No encontrada", None]:
         riesgo += 20
         razones.append("Empresa no identificada")
-
-    if salario in ["", "no especificado", "no encontrado"]:
-        riesgo += 10
-        razones.append("Salario no especificado")
 
     if len(requisitos) < 80:
         riesgo += 10
