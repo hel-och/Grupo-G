@@ -42,8 +42,8 @@ function mostrarEmpleos() {
     const categoria = document.getElementById("filtroCategoria").value;
     const fuente = document.getElementById("filtroFuente").value;
     const riesgo = document.getElementById("filtroRiesgo").value;
-    const orden = document.getElementById("filtroOrden").value;
-    const busqueda = document.getElementById("filtroBusqueda").value.toLowerCase().trim();
+    const orden = document.getElementById("filtroOrden") ? document.getElementById("filtroOrden").value : "default";
+    const busqueda = document.getElementById("filtroBusqueda") ? document.getElementById("filtroBusqueda").value.toLowerCase().trim() : "";
 
     let filtrados = empleos;
 
@@ -82,11 +82,18 @@ function mostrarEmpleos() {
 }
 
 function resetFiltros() {
-    document.getElementById("filtroBusqueda").value = "";
+    if (document.getElementById("filtroBusqueda")) {
+        document.getElementById("filtroBusqueda").value = "";
+    }
+
     document.getElementById("filtroFuente").value = "Todas";
     document.getElementById("filtroCategoria").value = "Todas";
     document.getElementById("filtroRiesgo").value = "Todos";
-    document.getElementById("filtroOrden").value = "default";
+
+    if (document.getElementById("filtroOrden")) {
+        document.getElementById("filtroOrden").value = "default";
+    }
+
     mostrarEmpleos();
 }
 
@@ -151,6 +158,9 @@ function renderizarOfertas(datos) {
         const div = document.createElement("div");
         div.className = "oferta";
 
+        const requisitos = e.requisitos || "Requisitos no especificados.";
+        const responsabilidades = e.responsabilidades || e.descripcion || "Responsabilidades no especificadas.";
+
         div.innerHTML = `
             <h2>${e.titulo}</h2>
             <p><strong>Empresa:</strong> ${e.empresa}</p>
@@ -163,7 +173,8 @@ function renderizarOfertas(datos) {
                 <span class="etiqueta riesgo-${e.nivel_riesgo}">${e.nivel_riesgo}</span>
             </p>
             <p><strong>Razones:</strong> ${e.razones}</p>
-            <p class="descripcion"><strong>Descripción:</strong><br>${e.descripcion}</p>
+            <p class="descripcion"><strong>Requisitos:</strong><br>${requisitos}</p>
+            <p class="descripcion"><strong>Responsabilidades / Rol:</strong><br>${responsabilidades}</p>
             <p><a href="${e.url}" target="_blank">Ver oferta original</a></p>
         `;
 
