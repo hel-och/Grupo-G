@@ -39,18 +39,9 @@ df = df.drop_duplicates(
 )
 
 columnas_texto = [
-    "titulo",
-    "empresa",
-    "categoria",
-    "ubicacion",
-    "salario",
-    "requisitos",
-    "responsabilidades",
-    "descripcion",
-    "fuente",
-    "url",
-    "nivel_riesgo",
-    "razones"
+    "titulo", "empresa", "categoria", "ubicacion", "salario",
+    "requisitos", "responsabilidades", "descripcion",
+    "fuente", "url", "nivel_riesgo", "razones"
 ]
 
 for columna in columnas_texto:
@@ -70,9 +61,7 @@ df["responsabilidades"] = df["responsabilidades"].replace("", pd.NA).fillna(
     "Responsabilidades no especificadas claramente en la oferta."
 )
 
-df["descripcion"] = (
-    df["requisitos"] + " " + df["responsabilidades"]
-)
+df["descripcion"] = df["requisitos"] + " " + df["responsabilidades"]
 
 print("\nAnálisis con pandas")
 
