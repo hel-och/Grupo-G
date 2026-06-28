@@ -113,16 +113,43 @@ def extraer_ubicacion(bloque):
     return "Remoto"
 
 
-def extraer_descripcion(bloque, empresa):
+def extraer_requisitos_y_responsabilidades(bloque, empresa):
     texto_bloque = " ".join(bloque)
+
+    requisitos = []
+    responsabilidades = []
+
+    claves_requisitos = [
+        "yoe", "years", "experience", "degree", "bachelor",
+        "required", "skills", "knowledge", "proficiency",
+        "english", "sql", "python", "aws", "excel"
+    ]
+
+    for linea in bloque:
+        l = linea.lower()
+
+        if any(c in l for c in claves_requisitos):
+            requisitos.append(linea)
 
     if empresa != "No encontrada":
         for i, linea in enumerate(bloque):
             if linea.startswith(empresa + ":"):
-                descripcion = " ".join(bloque[i:i + 10])
-                return traducir(descripcion)
+                responsabilidades = bloque[i:i + 5]
+                break
 
-    return traducir(texto_bloque)
+    if not responsabilidades:
+        responsabilidades = bloque[3:10]
+
+    requisitos_txt = " ".join(requisitos[:8])
+    responsabilidades_txt = " ".join(responsabilidades[:8])
+
+    if len(requisitos_txt) < 40:
+        requisitos_txt = "Requisitos no especificados claramente en la oferta."
+
+    if len(responsabilidades_txt) < 40:
+        responsabilidades_txt = texto_bloque
+
+    return traducir(requisitos_txt), traducir(responsabilidades_txt)
 
 
 def extraer_empleo_desde_bloque(bloque):
@@ -144,7 +171,7 @@ def extraer_empleo_desde_bloque(bloque):
     if periodo != "No especificado":
         salario_final = f"{salario} {periodo}"
 
-    descripcion = extraer_descripcion(bloque, empresa)
+    requisitos, responsabilidades = extraer_requisitos_y_responsabilidades(bloque, empresa)
 
     return {
         "titulo": traducir(titulo),
@@ -152,7 +179,9 @@ def extraer_empleo_desde_bloque(bloque):
         "categoria": CATEGORIA,
         "ubicacion": ubicacion,
         "salario": salario_final,
-        "descripcion": descripcion,
+        "requisitos": requisitos,
+        "responsabilidades": responsabilidades,
+        "descripcion": requisitos + " " + responsabilidades,
         "url": URL,
         "fuente": FUENTE
     }
