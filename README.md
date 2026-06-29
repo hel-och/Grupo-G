@@ -7,4 +7,4 @@ Sistema desarrollado para recopilar ofertas de empleo mediante Web Scraping y an
 - Delgado Conzuero, Nathaly(NathalyDC)
 - Ochante Cerazo, Helmer (hel-och)
 - Quispe Lopez Daiby jaime (deiby-jql)
-- 
+- Veliz Camayo, Victor Hugo (VictorVeliz29)
