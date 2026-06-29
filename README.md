@@ -5,6 +5,6 @@ Sistema desarrollado para recopilar ofertas de empleo mediante Web Scraping y an
 
 ## Integrantes
 - Delgado Conzuero, Nathaly(NathalyDC)
-- 
+- Ochante Cerazo, Helmer (hel-och)
 - 
 - 
